@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aasim Chat</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+      body {
+        margin: 0;
+        background-color: #0a0f14;
+        color: #fff;
+        font-family: "Segoe UI", Roboto, sans-serif;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+
+      .chat-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        max-width: 600px;
+        margin: auto;
+        border: 1px solid #1e2329;
+        border-radius: 15px;
+        background-color: #111820;
+        overflow: hidden;
+        box-shadow: 0 0 20px rgba(0, 255, 150, 0.05);
+      }
+
+      .chat-header {
+        /* background: linear-gradient(135deg, #1f6feb, #00a884); */
+        background-color: #00a884;
+        padding: 12px 15px;
+        font-size: 18px;
+        font-weight: bold;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: sticky;
+        top: 0;
+      }
+
+      #messages {
+        list-style: none;
+        padding: 10px 15px;
+        margin: 0;
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        scroll-behavior: smooth;
+      }
+
+      #messages::-webkit-scrollbar {
+        width: 6px;
+      }
+      #messages::-webkit-scrollbar-thumb {
+        background: #30363d;
+        border-radius: 10px;
+      }
+
+      #messages li {
+        max-width: 75%;
+        margin: 5px 0;
+        padding: 10px 14px;
+        word-wrap: break-word;
+        position: relative;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        animation: fadeIn 0.25s ease-in;
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .me {
+        align-self: flex-end;
+        background-color: #00a884;
+        color: #fff;
+        border-bottom-left-radius: 8px;
+      }
+
+      .friend {
+        align-self: flex-start;
+        background-color: #262f38;
+        color: #e5e5e5;
+        border-bottom-right-radius: 8px;
+      }
+
+      .time {
+        display: block;
+        font-size: 10px;
+        color: #bdbdbd;
+        text-align: right;
+        margin-top: 4px;
+      }
+
+      .input-area {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        border-top: 1px solid #222;
+        background-color: #0e151b;
+        gap: 8px;
+      }
+
+      .emoji-btn {
+        font-size: 24px;
+        background: none;
+        border: none;
+        color: #ccc;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+      .emoji-btn:hover {
+        transform: scale(1.2);
+        color: #00ffae;
+      }
+
+      .input-area input {
+        flex: 1;
+        padding: 12px;
+        border: none;
+        border-radius: 25px;
+        outline: none;
+        font-size: 15px;
+        background-color: #1b222c;
+        color: white;
+        transition: all 0.2s ease;
+      }
+      .input-area input:focus { background-color: #212b36; }
+
+      .input-area button.send-btn {
+        background: linear-gradient(135deg, #00a884, #007a63);
+        color: white;
+        border: none;
+        padding: 12px 15px;
+        border-radius: 25px;
+        font-size: 15px;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+      .input-area button.send-btn:hover {
+        transform: scale(1.05);
+        background: linear-gradient(135deg, #00c89a, #008f71);
+      }
+
+      @media (max-width: 600px) {
+        .chat-container { border-radius: 0; height: 100vh; margin: 0; max-width: 100%; }
+        .chat-header { font-size: 16px; }
+        .input-area input { font-size: 14px; }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="chat-container">
+      <div class="chat-header">
+        <div><span id="chat-name">Chat 💬</span></div>
+      </div>
+
+      <ul id="messages"></ul>
+
+      <div class="input-area">
+        <button class="emoji-btn" id="emojiBtn">😊</button>
+        <input id="msg" placeholder="Type a message..." autocomplete="off" />
+        <button class="send-btn">Send</button>
+      </div>
+    </div>
+
+    <script>
+      const socket = io("http://localhost:3000");
+      const input = document.getElementById("msg");
+      const messages = document.getElementById("messages");
+      const sendButton = document.querySelector(".send-btn");
+      const emojiBtn = document.getElementById("emojiBtn");
+
+      const username = prompt("Enter your name:") || "You";
+      document.getElementById("chat-name").textContent = username;
+
+      // Caesar cipher encryption/decryption
+      function encrypt(text, shift = 17) {
+        return text.split('').map(c => {
+          const code = c.charCodeAt(0);
+          if (code >= 32 && code <= 126) { // printable ASCII
+            return String.fromCharCode(((code - 32 + shift) % 95) + 32);
+          }
+          return c;
+        }).join('');
+      }
+      function decrypt(text, shift = 17) {
+        return text.split('').map(c => {
+          const code = c.charCodeAt(0);
+          if (code >= 32 && code <= 126) {
+            return String.fromCharCode(((code - 32 - shift + 95) % 95) + 32);
+          }
+          return c;
+        }).join('');
+      }
+
+      sendButton.onclick = sendMessage;
+      input.addEventListener("keypress", e => { if (e.key === "Enter") sendMessage(); });
+
+      function sendMessage() {
+        const text = input.value.trim();
+        if (!text) return;
+
+        const time = new Date();
+        let hours = time.getHours();
+        const minutes = time.getMinutes().toString().padStart(2, "0");
+        const ampm = hours >= 12 ? "PM" : "AM";
+        hours = hours % 12 || 12;
+        const formattedTime = `${hours}:${minutes} ${ampm}`;
+
+        const encryptedText = encrypt(text);
+        const msgData = { user: username, text: encryptedText, time: formattedTime };
+        socket.emit("chatMessage", msgData);
+        input.value = "";
+      }
+
+      // Emoji picker
+      emojiBtn.addEventListener("click", async () => {
+        try {
+          const picker = document.createElement("input");
+          picker.type = "text";
+          picker.style.position = "absolute";
+          picker.style.opacity = 0;
+          document.body.appendChild(picker);
+          picker.focus();
+          picker.addEventListener("input", () => {
+            input.value += picker.value;
+            picker.remove();
+          });
+        } catch (e) {
+          alert("Emoji picker not supported on this browser.");
+        }
+      });
+
+      socket.on("chatMessage", (msg) => {
+        const li = document.createElement("li");
+        li.className = msg.user === username ? "me" : "friend";
+        li.innerHTML = `<span>${decrypt(msg.text)}</span><span class="time">${msg.time}</span>`;
+        messages.appendChild(li);
+        messages.scrollTop = messages.scrollHeight;
+      });
+    </script>
+  </body>
+</html>
