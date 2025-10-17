@@ -2,27 +2,16 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0" /> -->
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
-
     <title>Aasim Chat</title>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <style>
+    <!-- <style>
       :root {
         --vh: 100%;
       }
-      /* body {
-        margin: 0;
-        background-color: #0a0f14;
-        color: #fff;
-        font-family: "Segoe UI", Roboto, sans-serif;
-        display: flex;
-        flex-direction: column;
-         height: 100vh; 
-      } */
 
       html,
       body {
@@ -32,64 +21,92 @@
         background-color: #0a0f14;
         font-family: "Segoe UI", Roboto, sans-serif;
       }
-      /* .chat-container {
-        flex: 1;
+
+      /* ===================
+         LOGIN PAGE
+      =================== */
+      .login-container {
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
-        max-width: 600px;
-        margin: auto;
-        border: 1px solid #1e2329;
-        border-radius: 15px;
-        background-color: #111820;
-        overflow: hidden;
-        box-shadow: 0 0 20px rgba(0, 255, 150, 0.05);
-      } */
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: #fff;
+        background-color: #5e00ff		;
+      }
+
+      .login-box {
+        background-color: #070066	;
+        padding: 30px 40px;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0, 255, 150, 0.1);
+        width: 90%;
+        max-width: 350px;
+        text-align: center;
+      }
+
+      .login-box h2 {
+        color: #00a884;
+        margin-bottom: 20px;
+      }
+
+      .login-box input {
+        width: 100%;
+        padding: 10px;
+        margin: 8px 0;
+        border: none;
+        border-radius: 5px;
+        background-color: #1b222c;
+        color: white;
+      }
+
+      .login-box button {
+        display: block;
+        width: 100%;
+        margin: 10px auto;
+        padding: 10px;
+        background-color: #00a884;
+        border: none;
+        color: white;
+        font-size: 16px;
+        border-radius: 5px;
+        cursor: pointer;
+        /* margin-top: 10px; */
+      }
+
+      .login-box button:hover {
+        background-color: #00c89a;
+      }
+
+      .error-msg {
+        color: #ff6b6b;
+        margin-top: 10px;
+        font-size: 14px;
+      }
+
+      /* ===================
+         CHAT PAGE
+      =================== */
       .chat-container {
+        display: none; /* hidden until login success */
         position: relative;
         max-width: 600px;
         margin: auto;
         border: 1px solid #1e2329;
         border-radius: 15px;
-        background-color: #111820;
+        background-color: #5e00ff	;
         box-shadow: 0 0 20px rgba(0, 255, 150, 0.05);
         height: 90%;
-        display: flex;
-        /* padding: 10px; */
         flex-direction: column;
-        /* padding-bottom: 50px; */
-      }
-      /* 
-      .chat-header {
-        background-color: #00a884;
-        padding: 12px 15px;
-        font-size: 18px;
-        font-weight: bold;
-        color: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        position: sticky;
-        top: 0;
-      } */
-      .chat-header {
-        background-color: #00a884;
-        padding: 12px 15px;
-        font-size: 18px;
-        font-weight: bold;
-        color: #fff;
       }
 
-      /* #messages {
-        list-style: none;
-        padding: 10px 15px;
-        margin: 0;
-        flex: 1;
-        overflow-y: auto;
-        display: flex;
-        flex-direction: column;
-        scroll-behavior: smooth;
-      } */
+      .chat-header {
+        background-color: #00a884;
+        padding: 12px 15px;
+        font-size: 18px;
+        font-weight: bold;
+        color: #fff;
+      }
 
       #messages {
         list-style: none;
@@ -151,19 +168,9 @@
         margin-top: 4px;
       }
 
-      /* .input-area {
-        display: flex;
-        align-items: center;
-        padding: 10px;
-        border-top: 1px solid #222;
-        background-color: #0e151b;
-        gap: 8px;
-        
-      } */
       .input-area {
-        position: fixed; /* anchor at bottom */
+        position: fixed;
         bottom: 0;
-        /* left: 0; */
         width: 100%;
         max-width: 600px;
         display: flex;
@@ -178,22 +185,7 @@
       .emoji-btn {
         display: none;
       }
-      .emoji-btn:hover {
-        transform: scale(1.2);
-        color: #00ffae;
-      }
 
-      /* .input-area input {
-        flex: 1;
-        padding: 12px;
-        border: none;
-        border-radius: 25px;
-        outline: none;
-        font-size: 15px;
-        background-color: #1b222c;
-        color: white;
-        transition: all 0.2s ease;
-      } */
       .input-area input {
         flex: 1;
         padding: 12px;
@@ -203,20 +195,7 @@
         background-color: #1b222c;
         color: white;
       }
-      .input-area input:focus {
-        background-color: #212b36;
-      }
 
-      /* .input-area button.send-btn {
-        background: linear-gradient(135deg, #00a884, #007a63);
-        color: white;
-        border: none;
-        padding: 12px 15px;
-        border-radius: 25px;
-        font-size: 15px;
-        cursor: pointer;
-        transition: 0.3s;
-      } */
       .input-area button.send-btn {
         background: linear-gradient(135deg, #00a884, #007a63);
         color: white;
@@ -225,6 +204,7 @@
         border-radius: 25px;
         margin-right: 10px;
       }
+
       .input-area button.send-btn:hover {
         transform: scale(1.05);
         background: linear-gradient(135deg, #00c89a, #008f71);
@@ -237,22 +217,272 @@
           margin: 0;
           max-width: 100%;
         }
-        .chat-header {
-          font-size: 16px;
-        }
-        .input-area input,
-        button.send-btn {
-          font-size: 14px;
-          margin-bottom: 20px;
-        }
       }
-    </style>
+    </style> -->
+    <style>
+  :root {
+    --bg-main: #0a0f1a;
+    --bg-secondary: #111a2b;
+    --blue-light: #007bff;
+    --blue-dark: #001e3c;
+    --accent: #00bfff;
+    --accent-hover: #33ccff;
+    --text-light: #e0e0e0;
+    --text-muted: #a0a0a0;
+  }
+
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background-color: var(--bg-main);
+    font-family: "Segoe UI", Roboto, sans-serif;
+  }
+  .emoji-btn {
+        display: none;
+      }
+
+  /* ===================
+       LOGIN PAGE
+  =================== */
+  .login-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-light);
+    background: linear-gradient(160deg, #001e3c, #0a0f1a 80%);
+  }
+
+  .login-box {
+    background-color: var(--bg-secondary);
+    padding: 30px 40px;
+    border-radius: 12px;
+    box-shadow: 0 0 25px rgba(0, 191, 255, 0.15);
+    width: 90%;
+    max-width: 350px;
+    text-align: center;
+  }
+
+  .login-box h2 {
+    color: var(--accent);
+    margin-bottom: 20px;
+    text-shadow: 0 0 6px rgba(0, 191, 255, 0.3);
+  }
+
+  .login-box input {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    border: none;
+    border-radius: 6px;
+    background-color: #0e1625;
+    color: var(--text-light);
+    font-size: 15px;
+    transition: 0.3s;
+  }
+
+  .login-box input:focus {
+    outline: 2px solid var(--accent);
+  }
+
+  .login-box button {
+    display: block;
+    width: 100%;
+    margin: 12px auto 0;
+    padding: 10px;
+    background: linear-gradient(135deg, var(--accent), var(--blue-light));
+    border: none;
+    color: white;
+    font-size: 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.25s ease;
+  }
+
+  .login-box button:hover {
+    background: linear-gradient(135deg, var(--accent-hover), var(--blue-light));
+    transform: scale(1.03);
+  }
+
+  .error-msg {
+    color: #ff6b6b;
+    margin-top: 10px;
+    font-size: 14px;
+  }
+
+  /* ===================
+       CHAT PAGE
+  =================== */
+  .chat-container {
+    display: none; /* hidden until login success */
+    position: relative;
+    max-width: 600px;
+    margin: auto;
+    border: 1px solid #1e2b3a;
+    /* border-radius: 15px; */
+    /* background-color: var(--bg-secondary); */
+    background: url("https://w0.peakpx.com/wallpaper/428/765/HD-wallpaper-best-lovely-moon-background-couple-in-love-silhouette-blue-effect-thumbnail.jpg") ;
+    background-size: cover;
+    background-repeat: no-repeat;
+
+    box-shadow: 0 0 25px rgba(0, 191, 255, 0.1);
+    height: 90%;
+    flex-direction: column;
+  }
+
+  .chat-header {
+    background: linear-gradient(90deg, var(--blue-dark), var(--blue-light));
+    padding: 12px 15px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #fff;
+    /* border-top-left-radius: 15px; */
+    /* border-top-right-radius: 15px; */
+    letter-spacing: 0.5px;
+  }
+
+  #messages {
+    list-style: none;
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 18px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  #messages::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  #messages::-webkit-scrollbar-thumb {
+    background: #2b3950;
+    border-radius: 10px;
+  }
+
+  #messages li {
+    max-width: 75%;
+    margin: 5px 0;
+    padding: 10px 14px;
+    word-wrap: break-word;
+    position: relative;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    animation: fadeIn 0.25s ease-in;
+    border-radius: 12px;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .me {
+    align-self: flex-end;
+    background: linear-gradient(135deg, var(--blue-light), var(--accent));
+    color: #fff;
+    border-bottom-left-radius: 8px;
+  }
+
+  .friend {
+    align-self: flex-start;
+    background-color: #162437;
+    color: var(--text-light);
+    border-bottom-right-radius: 8px;
+  }
+
+  .time {
+    display: block;
+    font-size: 10px;
+    color: var(--text-muted);
+    text-align: right;
+    margin-top: 4px;
+    color: white;
+  }
+
+  .input-area {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-top: 1px solid #1a2433;
+    background-color: #0b1320;
+    gap: 8px;
+    z-index: 1000;
+  }
+
+  .input-area input {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    margin-left: 10px;
+    border-radius: 25px;
+    background-color: #1b263a;
+    color: white;
+  }
+
+  .input-area input:focus {
+    outline: 2px solid var(--accent);
+  }
+
+  .input-area button.send-btn {
+    background: linear-gradient(135deg, var(--accent), var(--blue-light));
+    color: white;
+    border: none;
+    padding: 12px 15px;
+    border-radius: 25px;
+    margin-right: 10px;
+    transition: 0.25s ease;
+  }
+
+  .input-area button.send-btn:hover {
+    transform: scale(1.05);
+    background: linear-gradient(135deg, var(--accent-hover), var(--blue-light));
+  }
+
+  @media (max-width: 600px) {
+    .chat-container {
+      border-radius: 0;
+      height: 90%;
+      margin: 0;
+      max-width: 100%;
+    }
+  }
+</style>
+
   </head>
 
   <body>
-    <div class="chat-container">
+    <!-- =====================
+          LOGIN PAGE
+    ===================== -->
+    <div class="login-container" id="loginContainer">
+      <div class="login-box">
+        <h2>Login to Aasim Chat </h2>
+        <input type="text" id="loginUsername" placeholder="Username" />
+        <input type="password" id="loginPassword" placeholder="Password" />
+        <button id="loginBtn">Login</button>
+        <div id="loginError" class="error-msg"></div>
+      </div>
+    </div>
+
+    <!-- =====================
+          CHAT PAGE
+    ===================== -->
+    <div class="chat-container" id="chatContainer">
       <div class="chat-header">
-        <div><span id="chat-name">Chat 💬</span></div>
+        <span id="chat-name" >Aasim Chat</span>
+        <span style="font-size: 20px; color: #111a2b;float: right; ">AasimChat</span>     &hearts;
       </div>
 
       <ul id="messages"></ul>
@@ -265,47 +495,110 @@
     </div>
 
     <script>
-      const socket = io("https://simple-chat-app-l0fm.onrender.com");
+      let socket;
+      let username = "";
+
+      const loginBtn = document.getElementById("loginBtn");
+      const loginContainer = document.getElementById("loginContainer");
+      const chatContainer = document.getElementById("chatContainer");
+      const loginError = document.getElementById("loginError");
+
       const input = document.getElementById("msg");
       const messages = document.getElementById("messages");
       const sendButton = document.querySelector(".send-btn");
-      const emojiBtn = document.getElementById("emojiBtn");
 
-      const username = prompt("Enter your name:") || "You";
-      document.getElementById("chat-name").textContent = username;
-
-      // Caesar cipher encryption/decryption
+      // ===============================
+      // SIMPLE CIPHER (same as before)
+      // ===============================
       function encrypt(text, shift = 17) {
         return text
           .split("")
           .map((c) => {
             const code = c.charCodeAt(0);
-            if (code >= 32 && code <= 126) {
-              // printable ASCII
+            if (code >= 32 && code <= 126)
               return String.fromCharCode(((code - 32 + shift) % 95) + 32);
-            }
             return c;
           })
           .join("");
       }
+
       function decrypt(text, shift = 17) {
         return text
           .split("")
           .map((c) => {
             const code = c.charCodeAt(0);
-            if (code >= 32 && code <= 126) {
+            if (code >= 32 && code <= 126)
               return String.fromCharCode(((code - 32 - shift + 95) % 95) + 32);
-            }
             return c;
           })
           .join("");
       }
 
-      sendButton.onclick = sendMessage;
-      input.addEventListener("keypress", (e) => {
-        if (e.key === "Enter") sendMessage();
+      // ===============================
+      // LOGIN LOGIC
+      // ===============================
+      loginBtn.addEventListener("click", async () => {
+        username = document.getElementById("loginUsername").value.trim();
+        const password = document.getElementById("loginPassword").value.trim();
+        loginError.textContent = "";
+
+        if (!username || !password) {
+          loginError.textContent = "Please enter both username and password.";
+          return;
+        }
+
+        try {
+          const response = await fetch("/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password }),
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            // Hide login and show chat
+            loginContainer.style.display = "none";
+            chatContainer.style.display = "flex";
+            document.getElementById("chat-name").textContent =
+              username;
+            connectSocket();
+          } else {
+            loginError.textContent = data.message || "Invalid credentials.";
+          }
+        } catch (err) {
+          loginError.textContent = "Server not reachable.";
+          console.error(err);
+        }
       });
 
+      // ===============================
+      // SOCKET CONNECTION (after login)
+      // ===============================
+      function connectSocket() {
+        socket = io("/", { query: { username } });
+
+        socket.on("connect", () => {
+          console.log("Connected as:", username);
+        });
+
+        socket.on("chatMessage", (msg) => {
+          const li = document.createElement("li");
+          li.className = msg.user === username ? "me" : "friend";
+          li.innerHTML = `<span>${decrypt(msg.text)}</span><span class="time">${msg.time}</span>`;
+          messages.appendChild(li);
+          messages.scrollTop = messages.scrollHeight;
+        });
+
+        sendButton.onclick = sendMessage;
+        input.addEventListener("keypress", (e) => {
+          if (e.key === "Enter") sendMessage();
+        });
+      }
+
+      // ===============================
+      // SEND MESSAGE
+      // ===============================
       function sendMessage() {
         const text = input.value.trim();
         if (!text) return;
@@ -318,53 +611,10 @@
         const formattedTime = `${hours}:${minutes} ${ampm}`;
 
         const encryptedText = encrypt(text);
-        const msgData = {
-          user: username,
-          text: encryptedText,
-          time: formattedTime,
-        };
+        const msgData = { user: username, text: encryptedText, time: formattedTime };
         socket.emit("chatMessage", msgData);
         input.value = "";
       }
-
-      // Emoji picker
-      emojiBtn.addEventListener("click", async () => {
-        try {
-          const picker = document.createElement("input");
-          picker.type = "text";
-          picker.style.position = "absolute";
-          picker.style.opacity = 0;
-          document.body.appendChild(picker);
-          picker.focus();
-          picker.addEventListener("input", () => {
-            input.value += picker.value;
-            picker.remove();
-          });
-        } catch (e) {
-          alert("Emoji picker not supported on this browser.");
-        }
-      });
-
-      socket.on("chatMessage", (msg) => {
-        const li = document.createElement("li");
-        li.className = msg.user === username ? "me" : "friend";
-        li.innerHTML = `<span>${decrypt(msg.text)}</span><span class="time">${
-          msg.time
-        }</span>`;
-        messages.appendChild(li);
-        messages.scrollTop = messages.scrollHeight;
-      });
-
-      function setVh() {
-        const vh = window.innerHeight * 0.01;
-        document.documentElement.style.setProperty("--vh", `${vh}px`);
-      }
-
-      // Initial set
-      setVh();
-
-      // Update on resize (keyboard open/close)
-      window.addEventListener("resize", setVh);
     </script>
   </body>
 </html>
